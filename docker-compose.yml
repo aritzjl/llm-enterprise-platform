@@ -4,9 +4,10 @@
 # Stack base del curso "LLMs Locales - Ollama, vLLM y sus Alternativas"
 #
 # Uso:
-#   docker compose up -d                     # Stack base (con vLLM)
-#   docker compose --profile ollama up -d    # Stack + Ollama
-#   docker compose --profile ollama down     # Parar todo
+#   docker compose --profile vllm up -d      # Stack con vLLM
+#   docker compose --profile ollama up -d    # Stack con Ollama
+#   docker compose --profile vllm --profile ollama up -d # Stack con ambos
+#   docker compose down                      # Parar todo
 # ============================================================
 
 services:
@@ -44,6 +45,8 @@ services:
     image: vllm/vllm-openai:v0.5.4
     container_name: llm-vllm
     restart: "no"
+    profiles:
+      - vllm
     ports:
       - "8001:8000"
     volumes:

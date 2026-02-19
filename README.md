@@ -108,11 +108,14 @@ Los valores por defecto son funcionales para desarrollo local. No es necesario c
 # IMPORTANTE: Asegurarse de usar Docker Engine (no Docker Desktop)
 docker context use default
 
-# Stack base (con vLLM - requiere NVIDIA GPU)
-docker compose up -d
+# Stack base con vLLM (requiere NVIDIA GPU)
+docker compose --profile vllm up -d
 
-# Stack base + Ollama (motor alternativo sin GPU)
+# Stack base con Ollama (motor alternativo, CPU/GPU)
 docker compose --profile ollama up -d
+
+# Stack completo (vLLM + Ollama)
+docker compose --profile vllm --profile ollama up -d
 ```
 
 **Nota sobre vLLM y GPU:**
@@ -234,11 +237,14 @@ llm-enterprise-platform/
 ## Comandos Utiles
 
 ```bash
-# Levantar stack base
-docker compose up -d
+# Levantar stack con vLLM (GPU)
+docker compose --profile vllm up -d
 
-# Levantar stack con Ollama
+# Levantar stack con Ollama (CPU/GPU)
 docker compose --profile ollama up -d
+
+# Levantar ambos
+docker compose --profile vllm --profile ollama up -d
 
 # Ver estado de los contenedores
 docker compose ps
@@ -341,6 +347,7 @@ sudo lsof -i :8000
 
 Si algo no funciona despues de intentar varias cosas:
 ```bash
+# Ejemplo para Ollama (reemplazar perfil si se usa vLLM)
 docker compose --profile ollama down -v
 docker compose --profile ollama up -d
 ```
