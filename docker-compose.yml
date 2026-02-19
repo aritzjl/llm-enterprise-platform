@@ -290,7 +290,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniosecret}
     ports:
-      - "9091:9000"
+      - "9000:9000"
+      - "9001:9001"
     expose:
       - "9000"
       - "9001"
