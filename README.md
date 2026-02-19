@@ -108,13 +108,17 @@ Los valores por defecto son funcionales para desarrollo local. No es necesario c
 # IMPORTANTE: Asegurarse de usar Docker Engine (no Docker Desktop)
 docker context use default
 
-# Stack base con vLLM (requiere NVIDIA GPU)
+# Opción 1: Plataforma base (SIN inferencia local)
+# Útil si usas vLLM/Ollama en otra máquina o solo desarrollas la API/DB
+docker compose --profile platform up -d
+
+# Opción 2: Stack base con vLLM (requiere NVIDIA GPU)
 docker compose --profile vllm up -d
 
-# Stack base con Ollama (motor alternativo, CPU/GPU)
+# Opción 3: Stack base con Ollama (motor alternativo, CPU/GPU)
 docker compose --profile ollama up -d
 
-# Stack completo (vLLM + Ollama)
+# Opción 4: Stack completo (vLLM + Ollama)
 docker compose --profile vllm --profile ollama up -d
 ```
 

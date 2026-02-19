@@ -4,8 +4,9 @@
 # Stack base del curso "LLMs Locales - Ollama, vLLM y sus Alternativas"
 #
 # Uso:
-#   docker compose --profile vllm up -d      # Stack con vLLM
-#   docker compose --profile ollama up -d    # Stack con Ollama
+#   docker compose --profile vllm up -d      # API + Stack vLLM (platform por defecto)
+#   docker compose --profile ollama up -d    # API + Stack Ollama (platform por defecto)
+#   docker compose --profile platform up -d  # Solo API y servicios auxiliares (sin LLM local)
 #   docker compose --profile vllm --profile ollama up -d # Stack con ambos
 #   docker compose down                      # Parar todo
 # ============================================================
@@ -22,6 +23,10 @@ services:
       dockerfile: Dockerfile
     container_name: llm-api
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     ports:
       - "8000:8000"
     healthcheck:
@@ -122,6 +127,10 @@ services:
     image: qdrant/qdrant:latest
     container_name: llm-qdrant
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     ports:
       - "6333:6333"
       - "6334:6334"
@@ -144,6 +153,10 @@ services:
     image: langfuse/langfuse:3
     container_name: llm-langfuse-web
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     depends_on:
       langfuse-postgres:
         condition: service_healthy
@@ -200,6 +213,10 @@ services:
     image: langfuse/langfuse-worker:3
     container_name: llm-langfuse-worker
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     depends_on:
       langfuse-postgres:
         condition: service_healthy
@@ -224,6 +241,10 @@ services:
     image: postgres:17-alpine
     container_name: llm-langfuse-postgres
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -246,6 +267,10 @@ services:
     image: clickhouse/clickhouse-server
     container_name: llm-clickhouse
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     user: "101:101"
     environment:
       CLICKHOUSE_DB: default
@@ -270,6 +295,10 @@ services:
     image: redis:7
     container_name: llm-redis
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     command: >
       --requirepass ${REDIS_AUTH:-myredissecret}
       --maxmemory-policy noeviction
@@ -287,6 +316,10 @@ services:
     image: cgr.dev/chainguard/minio
     container_name: llm-minio
     restart: unless-stopped
+    profiles:
+      - platform
+      - vllm
+      - ollama
     entrypoint: sh
     command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
     environment:
