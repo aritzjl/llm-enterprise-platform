@@ -1,0 +1,15 @@
+{
+  "id": "chatcmpl-demo",
+  "object": "chat.completion.chunk",
+  "created": 1739966400,
+  "model": "Qwen/Qwen2-1.5B-Instruct-AWQ",
+  "choices": [
+    {
+      "index": 0,
+      "delta": {
+        "content": "Una arquitectura RAG..."
+      },
+      "finish_reason": null
+    }
+  ]
+}

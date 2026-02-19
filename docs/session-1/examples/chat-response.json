@@ -1,0 +1,21 @@
+{
+  "id": "chatcmpl-demo",
+  "object": "chat.completion",
+  "created": 1739966400,
+  "model": "Qwen/Qwen2-1.5B-Instruct-AWQ",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Una arquitectura RAG combina busqueda de contexto en documentos con generacion del LLM para responder con evidencia relevante."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 53,
+    "completion_tokens": 30,
+    "total_tokens": 83
+  }
+}

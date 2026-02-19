@@ -1,0 +1,16 @@
+{
+  "model": "Qwen/Qwen2-1.5B-Instruct-AWQ",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Responde de forma breve y util."
+    },
+    {
+      "role": "user",
+      "content": "Que es una arquitectura RAG?"
+    }
+  ],
+  "temperature": 0.2,
+  "max_tokens": 80,
+  "stream": false
+}

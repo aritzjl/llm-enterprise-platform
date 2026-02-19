@@ -147,6 +147,7 @@ Todos los servicios están accesibles mediante puertos directos:
 |----------|-----|-------|
 | **API - Health** | http://localhost:8000/health | Health check |
 | **API - Docs** | http://localhost:8000/docs | Swagger UI |
+| **API - Chat** | http://localhost:8000/v1/chat/completions | Gateway OpenAI-compatible (Sesion 1) |
 | **vLLM - Modelos** | http://localhost:8001/v1/models | Lista de modelos |
 | **vLLM - Chat** | http://localhost:8001/v1/chat/completions | API OpenAI-compatible |
 | **Ollama - Tags** | http://localhost:11436/api/tags | Lista de modelos (solo perfil ollama) |
@@ -212,6 +213,64 @@ curl http://localhost:11436/api/generate \
   }'
 ```
 
+## API Gateway de Sesion 1 (FastAPI -> vLLM/Ollama)
+
+La API expone `POST /v1/chat/completions` con contrato OpenAI-compatible y enruta al proveedor configurado por `.env`.
+
+### Variables clave
+
+```bash
+# Seleccion del proveedor en FastAPI
+LLM_PROVIDER=vllm               # opciones: vllm, ollama
+
+# Permite usar proveedores locales o remotos
+VLLM_BASE_URL=http://vllm:8000
+OLLAMA_BASE_URL=http://ollama:11434
+
+# Timeout de llamadas salientes desde FastAPI
+REQUEST_TIMEOUT_SECONDS=60
+
+# Trazabilidad Langfuse (modo fail-open)
+LANGFUSE_ENABLED=true
+LANGFUSE_HOST=http://langfuse-web:3000
+LANGFUSE_PUBLIC_KEY=
+LANGFUSE_SECRET_KEY=
+```
+
+### Ejemplo no streaming
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen2-1.5B-Instruct-AWQ",
+    "messages": [{"role": "user", "content": "Resume que es RAG en una frase."}],
+    "stream": false
+  }'
+```
+
+### Ejemplo streaming
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen2-1.5B-Instruct-AWQ",
+    "messages": [{"role": "user", "content": "Dame tres ventajas de usar LLM local."}],
+    "stream": true
+  }'
+```
+
+### Ejemplo con vLLM remoto
+
+```bash
+# .env
+LLM_PROVIDER=vllm
+VLLM_BASE_URL=http://<host-remoto-vllm>:8000
+```
+
+La API mantiene el mismo endpoint local (`localhost:8000/v1/chat/completions`) y enruta al backend remoto.
+
 ## Modelos de Inferencia
 
 | Motor | Modelo | Tamaño | Contexto | GPU |
@@ -228,10 +287,16 @@ llm-enterprise-platform/
 ├── .env.example              # Template de variables de entorno
 ├── .gitignore
 ├── docker-compose.yml        # Definicion de todos los servicios
+├── docs/
+│   └── session-1/
+│       ├── session1.http     # Coleccion HTTP para clase
+│       └── examples/         # Snapshots JSON de ejemplo
 ├── README.md
 ├── api/
 │   ├── Dockerfile            # Imagen de la API
 │   ├── requirements.txt      # Dependencias Python
+│   ├── tests/
+│   │   └── test_chat_api.py  # Smoke + unit tests sesion 1
 │   └── app/
 │       └── main.py           # Aplicacion FastAPI
 └── ollama/

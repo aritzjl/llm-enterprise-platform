@@ -29,6 +29,17 @@ services:
       - ollama
     ports:
       - "8000:8000"
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-vllm}
+      - VLLM_BASE_URL=${VLLM_BASE_URL:-http://vllm:8000}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - VLLM_MODEL=${VLLM_MODEL:-Qwen/Qwen2-1.5B-Instruct-AWQ}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2:1.5b}
+      - REQUEST_TIMEOUT_SECONDS=${REQUEST_TIMEOUT_SECONDS:-60}
+      - LANGFUSE_ENABLED=${LANGFUSE_ENABLED:-true}
+      - LANGFUSE_HOST=${LANGFUSE_HOST:-http://langfuse-web:3000}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
