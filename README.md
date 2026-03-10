@@ -10,6 +10,7 @@ Unicamente proporciona la base sobre la que construiremos la plataforma LLM corp
 El ejercicio practico guiado (paso a paso) esta en:
 
 - `sesion1/paso1.md`
+- `sesion1/paso2.md`
 
 ## Objetivo del Prework
 

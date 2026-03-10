@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     openai_api_key: str = "dummy"
     openai_timeout_seconds: float = 60.0
 
+    langfuse_secret_key: str = ""
+    langfuse_public_key: str = ""
+    langfuse_base_url: str = "https://cloud.langfuse.com"
+    langfuse_environment: str = "sesion1-paso2"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

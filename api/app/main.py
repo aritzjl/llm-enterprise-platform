@@ -7,6 +7,7 @@ from app.agents.chat_agent import initialize_chat_agent
 from app.api.v1.router import router as api_v1_router
 from app.core.exceptions import UpstreamServiceError
 from app.core.settings import get_settings
+from app.observability.langfuse import flush_langfuse
 
 settings = get_settings()
 
@@ -25,6 +26,12 @@ app.include_router(api_v1_router)
 def on_startup() -> None:
     """Initialize long-lived app components."""
     initialize_chat_agent()
+
+
+@app.on_event("shutdown")
+def on_shutdown() -> None:
+    """Flush observability events before process exit."""
+    flush_langfuse()
 
 
 @app.exception_handler(UpstreamServiceError)
