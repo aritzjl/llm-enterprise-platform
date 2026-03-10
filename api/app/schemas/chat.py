@@ -30,7 +30,6 @@ class ChatCompletionRequestSchema(BaseModel):
                     {"role": "user", "content": "Explica LangGraph en una frase corta."}
                 ],
                 "temperature": 0.2,
-                "max_tokens": 120,
                 "stream": False,
             }
         },
@@ -51,10 +50,7 @@ class ChatCompletionRequestSchema(BaseModel):
     )
     messages: list[ChatMessageSchema] = Field(min_length=1)
     temperature: float | None = Field(default=None, ge=0, le=2)
-    max_tokens: int = Field(
-        ge=1,
-        description="Max tokens obligatorio para esta llamada.",
-    )
+    max_tokens: int | None = Field(default=None, ge=1)
     stream: Literal[False] = False
 
     def to_domain(self) -> ChatRequest:

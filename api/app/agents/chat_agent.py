@@ -22,7 +22,7 @@ class ChatAgentState(TypedDict, total=False):
     model: str
     messages: list[dict[str, str]]
     temperature: float | None
-    max_tokens: int
+    max_tokens: int | None
     completion: dict[str, Any]
     trace: Any | None
 
@@ -56,9 +56,10 @@ def _call_llm(state: ChatAgentState) -> ChatAgentState:
     payload: dict[str, Any] = {
         "model": state["model"],
         "messages": state["messages"],
-        "max_tokens": state["max_tokens"],
         "stream": False,
     }
+    if state.get("max_tokens") is not None:
+        payload["max_tokens"] = state["max_tokens"]
     if state.get("temperature") is not None:
         payload["temperature"] = state["temperature"]
 

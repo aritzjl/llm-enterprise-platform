@@ -142,14 +142,16 @@ def create_llm_generation(
     model: str,
     messages: list[dict[str, str]],
     temperature: float | None,
-    max_tokens: int,
+    max_tokens: int | None,
 ) -> Any | None:
     """Create a child generation for one upstream LLM call."""
     if trace is None:
         return None
 
     settings = get_settings()
-    model_parameters: dict[str, Any] = {"max_tokens": max_tokens}
+    model_parameters: dict[str, Any] = {}
+    if max_tokens is not None:
+        model_parameters["max_tokens"] = max_tokens
     if temperature is not None:
         model_parameters["temperature"] = temperature
 

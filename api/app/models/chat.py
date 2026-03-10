@@ -19,5 +19,5 @@ class ChatRequest:
     base_url: str
     model: str
     messages: list[ChatMessage]
-    max_tokens: int
+    max_tokens: int | None = None
     temperature: float | None = None
