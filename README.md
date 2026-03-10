@@ -11,6 +11,7 @@ El ejercicio practico guiado (paso a paso) esta en:
 
 - `sesion1/paso1.md`
 - `sesion1/paso2.md`
+- `sesion1/paso3.md`
 
 ## Objetivo del Prework
 

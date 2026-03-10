@@ -23,6 +23,8 @@ class ChatCompletionRequestSchema(BaseModel):
         extra="forbid",
         json_schema_extra={
             "example": {
+                "provider": "ollama",
+                "base_url": "http://localhost:11436/v1",
                 "model": "llama3.1:8b",
                 "messages": [
                     {"role": "user", "content": "Explica LangGraph en una frase corta."}
@@ -34,6 +36,14 @@ class ChatCompletionRequestSchema(BaseModel):
         },
     )
 
+    provider: Literal["vllm", "ollama"] = Field(
+        description="Proveedor de inferencia para esta llamada (vllm u ollama).",
+    )
+    base_url: str = Field(
+        min_length=1,
+        description="Base URL OpenAI-compatible del proveedor para esta llamada.",
+        examples=["http://localhost:8001/v1", "http://localhost:11436/v1"],
+    )
     model: str = Field(
         min_length=1,
         description="Modelo obligatorio que se usara en esta llamada.",
@@ -51,6 +61,8 @@ class ChatCompletionRequestSchema(BaseModel):
         """Convert transport schema into domain request model."""
         messages = [ChatMessage(role=m.role, content=m.content) for m in self.messages]
         return ChatRequest(
+            provider=self.provider,
+            base_url=self.base_url.strip(),
             model=self.model,
             messages=messages,
             temperature=self.temperature,

@@ -16,13 +16,16 @@ from app.observability.langfuse import (
 )
 
 
-def list_models() -> dict[str, Any]:
-    """Proxy model listing from the configured OpenAI-compatible provider."""
-    client = get_openai_client()
+def list_models(base_url: str, provider: str | None = None) -> dict[str, Any]:
+    """Proxy model listing from a request-selected OpenAI-compatible provider."""
+    client = get_openai_client(base_url=base_url)
     try:
         response = client.models.list()
     except (APIConnectionError, APITimeoutError, APIError) as exc:
-        raise UpstreamServiceError(f"Error listing models from upstream provider: {exc}") from exc
+        provider_label = provider or "unknown"
+        raise UpstreamServiceError(
+            f"Error listing models from upstream provider ({provider_label}, {base_url}): {exc}"
+        ) from exc
     return response.model_dump(mode="json")
 
 
@@ -34,14 +37,22 @@ def create_chat_completion(request: ChatRequest) -> dict[str, Any]:
         completion = run_chat_agent(request, trace=trace)
     except (APIConnectionError, APITimeoutError, APIError) as exc:
         update_chat_trace_error(
-            trace=trace, error_message=str(exc), latency_ms=int((perf_counter() - start) * 1000)
+            trace=trace,
+            error_message=str(exc),
+            latency_ms=int((perf_counter() - start) * 1000),
+            provider=request.provider,
+            base_url=request.base_url,
         )
         raise UpstreamServiceError(
             f"Error generating chat completion from upstream provider: {exc}"
         ) from exc
     except Exception as exc:
         update_chat_trace_error(
-            trace=trace, error_message=str(exc), latency_ms=int((perf_counter() - start) * 1000)
+            trace=trace,
+            error_message=str(exc),
+            latency_ms=int((perf_counter() - start) * 1000),
+            provider=request.provider,
+            base_url=request.base_url,
         )
         raise
 
@@ -49,5 +60,7 @@ def create_chat_completion(request: ChatRequest) -> dict[str, Any]:
         trace=trace,
         completion=completion,
         latency_ms=int((perf_counter() - start) * 1000),
+        provider=request.provider,
+        base_url=request.base_url,
     )
     return completion

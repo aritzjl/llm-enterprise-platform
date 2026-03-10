@@ -17,6 +17,8 @@ from app.observability.langfuse import (
 class ChatAgentState(TypedDict, total=False):
     """State passed through the LangGraph pipeline."""
 
+    provider: str
+    base_url: str
     model: str
     messages: list[dict[str, str]]
     temperature: float | None
@@ -43,6 +45,8 @@ def _call_llm(state: ChatAgentState) -> ChatAgentState:
     start = perf_counter()
     generation = create_llm_generation(
         trace=state.get("trace"),
+        provider=state["provider"],
+        base_url=state["base_url"],
         model=state["model"],
         messages=state["messages"],
         temperature=state.get("temperature"),
@@ -59,7 +63,9 @@ def _call_llm(state: ChatAgentState) -> ChatAgentState:
         payload["temperature"] = state["temperature"]
 
     try:
-        completion = get_openai_client().chat.completions.create(**payload)
+        completion = get_openai_client(base_url=state["base_url"]).chat.completions.create(
+            **payload
+        )
     except Exception as exc:
         end_llm_generation_error(
             generation=generation,
@@ -103,6 +109,8 @@ def run_chat_agent(request: ChatRequest, trace: Any | None = None) -> dict[str, 
         initialize_chat_agent()
 
     state: ChatAgentState = {
+        "provider": request.provider,
+        "base_url": request.base_url,
         "model": request.model,
         "messages": [{"role": m.role, "content": m.content} for m in request.messages],
         "temperature": request.temperature,

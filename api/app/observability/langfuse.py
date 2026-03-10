@@ -60,6 +60,8 @@ def create_chat_trace(request: ChatRequest) -> Any | None:
 
     settings = get_settings()
     trace_input = {
+        "provider": request.provider,
+        "base_url": request.base_url,
         "model": request.model,
         "messages": [{"role": m.role, "content": m.content} for m in request.messages],
         "temperature": request.temperature,
@@ -70,7 +72,11 @@ def create_chat_trace(request: ChatRequest) -> Any | None:
         return client.trace(
             name="chat.completions",
             input=trace_input,
-            metadata={"endpoint": "/v1/chat/completions"},
+            metadata={
+                "endpoint": "/v1/chat/completions",
+                "provider": request.provider,
+                "base_url": request.base_url,
+            },
             environment=settings.langfuse_environment,
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
@@ -79,7 +85,11 @@ def create_chat_trace(request: ChatRequest) -> Any | None:
 
 
 def update_chat_trace_success(
-    trace: Any | None, completion: dict[str, Any], latency_ms: int
+    trace: Any | None,
+    completion: dict[str, Any],
+    latency_ms: int,
+    provider: str,
+    base_url: str,
 ) -> None:
     """Attach successful output metadata to trace."""
     if trace is None:
@@ -88,14 +98,23 @@ def update_chat_trace_success(
     try:
         trace.update(
             output=completion,
-            metadata={"status": "success", "latency_ms": latency_ms},
+            metadata={
+                "status": "success",
+                "latency_ms": latency_ms,
+                "provider": provider,
+                "base_url": base_url,
+            },
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
         logger.warning("Failed to update Langfuse trace (success): %s", exc)
 
 
 def update_chat_trace_error(
-    trace: Any | None, error_message: str, latency_ms: int
+    trace: Any | None,
+    error_message: str,
+    latency_ms: int,
+    provider: str,
+    base_url: str,
 ) -> None:
     """Attach error metadata to trace."""
     if trace is None:
@@ -103,7 +122,12 @@ def update_chat_trace_error(
 
     try:
         trace.update(
-            metadata={"status": "error", "latency_ms": latency_ms},
+            metadata={
+                "status": "error",
+                "latency_ms": latency_ms,
+                "provider": provider,
+                "base_url": base_url,
+            },
             output={"error": error_message},
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
@@ -113,6 +137,8 @@ def update_chat_trace_error(
 def create_llm_generation(
     trace: Any | None,
     *,
+    provider: str,
+    base_url: str,
     model: str,
     messages: list[dict[str, str]],
     temperature: float | None,
@@ -133,7 +159,7 @@ def create_llm_generation(
             model=model,
             input=messages,
             model_parameters=model_parameters,
-            metadata={"provider": "openai-compatible"},
+            metadata={"provider": provider, "base_url": base_url},
             environment=settings.langfuse_environment,
         )
     except Exception as exc:  # pragma: no cover - defensive fallback

@@ -15,6 +15,8 @@ class ChatMessage:
 class ChatRequest:
     """Domain request for a single non-stream chat completion."""
 
+    provider: str
+    base_url: str
     model: str
     messages: list[ChatMessage]
     max_tokens: int
