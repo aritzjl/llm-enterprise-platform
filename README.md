@@ -5,6 +5,12 @@ Infraestructura base obligatoria para el curso **LLMs Locales - Ollama, vLLM y s
 Este repositorio **no contiene** la logica del proyecto final ni los ejercicios del curso.
 Unicamente proporciona la base sobre la que construiremos la plataforma LLM corporativa durante las sesiones.
 
+## Guion de la Sesion 1
+
+El ejercicio practico guiado (paso a paso) esta en:
+
+- `sesion1/paso1.md`
+
 ## Objetivo del Prework
 
 Al finalizar el prework, cada alumno debera tener funcionando en su maquina:
