@@ -29,6 +29,10 @@ services:
       - ollama
     ports:
       - "8000:8000"
+    environment:
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://localhost:8001/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-dummy}
+      - OPENAI_TIMEOUT_SECONDS=${OPENAI_TIMEOUT_SECONDS:-60}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
