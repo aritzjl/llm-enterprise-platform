@@ -1,14 +1,6 @@
 # Sesion 1 - Paso 3
 
 
-## 1) Preparacion
-
-Partimos desde la rama del paso 2 y creamos la rama del paso 3:
-
-```bash
-git switch sesion1/paso2
-git switch -c sesion1/paso3
-```
 
 ## 2) Cambios de codigo archivo por archivo
 
