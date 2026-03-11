@@ -17,6 +17,7 @@ class ChatRequest:
 
     provider: str
     base_url: str
+    router_model: str
     model: str
     messages: list[ChatMessage]
     max_tokens: int | None = None

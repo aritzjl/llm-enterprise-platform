@@ -3,7 +3,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.agents.chat_agent import initialize_chat_agent
+from app.agents.chat_completion_agent import initialize_chat_agent
 from app.api.v1.router import router as api_v1_router
 from app.core.exceptions import UpstreamServiceError
 from app.core.settings import get_settings

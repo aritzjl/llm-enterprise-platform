@@ -5,7 +5,7 @@ from typing import Any
 
 from openai import APIConnectionError, APIError, APITimeoutError
 
-from app.agents.chat_agent import run_chat_agent
+from app.agents.chat_completion_agent import run_chat_agent
 from app.clients.openai_client import get_openai_client
 from app.core.exceptions import UpstreamServiceError
 from app.models.chat import ChatRequest
@@ -33,8 +33,13 @@ def create_chat_completion(request: ChatRequest) -> dict[str, Any]:
     """Generate one chat completion via LangGraph."""
     trace = create_chat_trace(request)
     start = perf_counter()
+    selected_route: str | None = None
+    responder_model: str | None = None
     try:
-        completion = run_chat_agent(request, trace=trace)
+        agent_result = run_chat_agent(request, trace=trace)
+        completion = agent_result["completion"]
+        selected_route = agent_result["selected_route"]
+        responder_model = agent_result["responder_model"]
     except (APIConnectionError, APITimeoutError, APIError) as exc:
         update_chat_trace_error(
             trace=trace,
@@ -42,6 +47,9 @@ def create_chat_completion(request: ChatRequest) -> dict[str, Any]:
             latency_ms=int((perf_counter() - start) * 1000),
             provider=request.provider,
             base_url=request.base_url,
+            router_model=request.router_model,
+            selected_route=selected_route,
+            responder_model=responder_model,
         )
         raise UpstreamServiceError(
             f"Error generating chat completion from upstream provider: {exc}"
@@ -53,6 +61,9 @@ def create_chat_completion(request: ChatRequest) -> dict[str, Any]:
             latency_ms=int((perf_counter() - start) * 1000),
             provider=request.provider,
             base_url=request.base_url,
+            router_model=request.router_model,
+            selected_route=selected_route,
+            responder_model=responder_model,
         )
         raise
 
@@ -62,5 +73,8 @@ def create_chat_completion(request: ChatRequest) -> dict[str, Any]:
         latency_ms=int((perf_counter() - start) * 1000),
         provider=request.provider,
         base_url=request.base_url,
+        router_model=request.router_model,
+        selected_route=selected_route,
+        responder_model=responder_model,
     )
     return completion

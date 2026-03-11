@@ -17,7 +17,7 @@ class ChatMessageSchema(BaseModel):
 
 
 class ChatCompletionRequestSchema(BaseModel):
-    """Subset of OpenAI chat completion payload supported in session 1."""
+    """Subset of OpenAI chat completion payload supported in this project."""
 
     model_config = ConfigDict(
         extra="forbid",
@@ -25,6 +25,7 @@ class ChatCompletionRequestSchema(BaseModel):
             "example": {
                 "provider": "ollama",
                 "base_url": "http://localhost:11436/v1",
+                "router_model": "llama3.2:1b",
                 "model": "llama3.1:8b",
                 "messages": [
                     {"role": "user", "content": "Explica LangGraph en una frase corta."}
@@ -43,9 +44,14 @@ class ChatCompletionRequestSchema(BaseModel):
         description="Base URL OpenAI-compatible del proveedor para esta llamada.",
         examples=["http://localhost:8001/v1", "http://localhost:11436/v1"],
     )
+    router_model: str = Field(
+        min_length=1,
+        description="Modelo enrutador obligatorio para clasificar simple/complex.",
+        examples=["llama3.2:1b"],
+    )
     model: str = Field(
         min_length=1,
-        description="Modelo obligatorio que se usara en esta llamada.",
+        description="Modelo principal obligatorio para consultas complejas.",
         examples=["llama3.1:8b"],
     )
     messages: list[ChatMessageSchema] = Field(min_length=1)
@@ -59,6 +65,7 @@ class ChatCompletionRequestSchema(BaseModel):
         return ChatRequest(
             provider=self.provider,
             base_url=self.base_url.strip(),
+            router_model=self.router_model.strip(),
             model=self.model,
             messages=messages,
             temperature=self.temperature,

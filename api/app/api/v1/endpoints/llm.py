@@ -29,6 +29,6 @@ def list_models(
 
 @router.post("/chat/completions")
 def create_chat_completion(payload: ChatCompletionRequestSchema) -> dict[str, Any]:
-    """Generate a chat completion with a LangGraph-backed single-node agent."""
+    """Generate a chat completion with a LangGraph router-first agent."""
     request = payload.to_domain()
     return llm_service.create_chat_completion(request)

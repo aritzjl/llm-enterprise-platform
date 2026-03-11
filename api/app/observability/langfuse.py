@@ -62,6 +62,7 @@ def create_chat_trace(request: ChatRequest) -> Any | None:
     trace_input = {
         "provider": request.provider,
         "base_url": request.base_url,
+        "router_model": request.router_model,
         "model": request.model,
         "messages": [{"role": m.role, "content": m.content} for m in request.messages],
         "temperature": request.temperature,
@@ -76,6 +77,7 @@ def create_chat_trace(request: ChatRequest) -> Any | None:
                 "endpoint": "/v1/chat/completions",
                 "provider": request.provider,
                 "base_url": request.base_url,
+                "router_model": request.router_model,
             },
             environment=settings.langfuse_environment,
         )
@@ -90,20 +92,30 @@ def update_chat_trace_success(
     latency_ms: int,
     provider: str,
     base_url: str,
+    router_model: str,
+    selected_route: str | None = None,
+    responder_model: str | None = None,
 ) -> None:
     """Attach successful output metadata to trace."""
     if trace is None:
         return
 
     try:
+        metadata: dict[str, Any] = {
+            "status": "success",
+            "latency_ms": latency_ms,
+            "provider": provider,
+            "base_url": base_url,
+            "router_model": router_model,
+        }
+        if selected_route is not None:
+            metadata["selected_route"] = selected_route
+        if responder_model is not None:
+            metadata["responder_model"] = responder_model
+
         trace.update(
             output=completion,
-            metadata={
-                "status": "success",
-                "latency_ms": latency_ms,
-                "provider": provider,
-                "base_url": base_url,
-            },
+            metadata=metadata,
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
         logger.warning("Failed to update Langfuse trace (success): %s", exc)
@@ -115,19 +127,29 @@ def update_chat_trace_error(
     latency_ms: int,
     provider: str,
     base_url: str,
+    router_model: str,
+    selected_route: str | None = None,
+    responder_model: str | None = None,
 ) -> None:
     """Attach error metadata to trace."""
     if trace is None:
         return
 
     try:
+        metadata: dict[str, Any] = {
+            "status": "error",
+            "latency_ms": latency_ms,
+            "provider": provider,
+            "base_url": base_url,
+            "router_model": router_model,
+        }
+        if selected_route is not None:
+            metadata["selected_route"] = selected_route
+        if responder_model is not None:
+            metadata["responder_model"] = responder_model
+
         trace.update(
-            metadata={
-                "status": "error",
-                "latency_ms": latency_ms,
-                "provider": provider,
-                "base_url": base_url,
-            },
+            metadata=metadata,
             output={"error": error_message},
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
@@ -143,6 +165,8 @@ def create_llm_generation(
     messages: list[dict[str, str]],
     temperature: float | None,
     max_tokens: int | None,
+    generation_name: str = "llm.generation",
+    metadata: dict[str, Any] | None = None,
 ) -> Any | None:
     """Create a child generation for one upstream LLM call."""
     if trace is None:
@@ -156,12 +180,16 @@ def create_llm_generation(
         model_parameters["temperature"] = temperature
 
     try:
+        generation_metadata = {"provider": provider, "base_url": base_url}
+        if metadata is not None:
+            generation_metadata.update(metadata)
+
         return trace.generation(
-            name="llm.generation",
+            name=generation_name,
             model=model,
             input=messages,
             model_parameters=model_parameters,
-            metadata={"provider": provider, "base_url": base_url},
+            metadata=generation_metadata,
             environment=settings.langfuse_environment,
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
@@ -175,33 +203,46 @@ def end_llm_generation_success(
     output: dict[str, Any],
     usage_details: dict[str, int] | None,
     latency_ms: int,
+    extra_metadata: dict[str, Any] | None = None,
 ) -> None:
     """Mark generation as successful."""
     if generation is None:
         return
 
     try:
+        metadata: dict[str, Any] = {"status": "success", "latency_ms": latency_ms}
+        if extra_metadata is not None:
+            metadata.update(extra_metadata)
+
         generation.end(
             output=output,
             usage_details=usage_details,
-            metadata={"status": "success", "latency_ms": latency_ms},
+            metadata=metadata,
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
         logger.warning("Failed to end Langfuse generation (success): %s", exc)
 
 
 def end_llm_generation_error(
-    generation: Any | None, *, error_message: str, latency_ms: int
+    generation: Any | None,
+    *,
+    error_message: str,
+    latency_ms: int,
+    extra_metadata: dict[str, Any] | None = None,
 ) -> None:
     """Mark generation as failed."""
     if generation is None:
         return
 
     try:
+        metadata: dict[str, Any] = {"status": "error", "latency_ms": latency_ms}
+        if extra_metadata is not None:
+            metadata.update(extra_metadata)
+
         generation.end(
             level="ERROR",
             status_message=error_message,
-            metadata={"status": "error", "latency_ms": latency_ms},
+            metadata=metadata,
         )
     except Exception as exc:  # pragma: no cover - defensive fallback
         logger.warning("Failed to end Langfuse generation (error): %s", exc)
